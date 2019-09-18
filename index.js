@@ -1,14 +1,13 @@
 const Web3 = require('web3');
-const PubSub = require('./PubSub');
-const BloomFilter = require('./bloom-filter');
+const PubSub = require('./pubsub');
 const BlockValidation = require('./block-validation');
 const ethers = require('ethers');
 const crypto = require('crypto');
 const Transaction = require('ethereumjs-tx');
 const ethJsUtil = require('ethereumjs-util');
 
-var contractAddress = '0xD7ba471d0699Ae77360118cf11Ba9E5A1d144006';
-let provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545');
+var contractAddress = '0x5C4e471d9c2ac9736C4b00E5E3072e5f02919853';
+let provider = new ethers.providers.JsonRpcProvider('https://ropsten.infura.io/v3/2b32da7c679a43d1840be1845ff19ae8');
 // Define the ABI (Application Binary Interface)
 var fs = require('fs');
 var abi = JSON.parse(
@@ -20,7 +19,7 @@ var abi = JSON.parse(
 //let contractweb3 = web3.eth.Contract(abi,contractAddress);
 let contract = new ethers.Contract(contractAddress, abi, provider);
 let privateKey = '0x7821dbd2d2ad113c4dc75d4a3f64b5635184ea47e8bdb448e8e260eea36d24b5';
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://127.0.0.1:7545'));
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws'));
 let contractweb3 = web3.eth.Contract(abi,contractAddress);
 let myECDH = crypto.createECDH('secp256k1');
 myECDH.setPrivateKey('7821dbd2d2ad113c4dc75d4a3f64b5635184ea47e8bdb448e8e260eea36d24b5','hex');
