@@ -17,7 +17,7 @@ var abi = JSON.parse(
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
 let contractweb3 = new web3.eth.Contract(abi,contractAddress);
-
+var myECDH;
 
 ms = 256;
 mc = 256;
@@ -91,7 +91,7 @@ async function main() {
   console.log(myAccount.key);
 
 
-  let myECDH = crypto.createECDH('secp256k1');
+  myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2),'hex');
 
   const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
