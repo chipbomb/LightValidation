@@ -3,7 +3,7 @@ const PubSub = require('./pubsub');
 const BlockValidation = require('./block-validation');
 const ethers = require('ethers');
 const crypto = require('crypto');
-const Transaction = require('ethereumjs-tx');
+const Transaction = require('ethereumjs-tx').Transaction;
 const ethJsUtil = require('ethereumjs-util');
 
 var contractAddress = '0x5C4e471d9c2ac9736C4b00E5E3072e5f02919853';
