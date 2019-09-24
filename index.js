@@ -14,13 +14,8 @@ var abi = JSON.parse(
   fs.readFileSync('./ethereum/build/contracts/LightValidation.json', 'utf8')
 ).abi;
 
-// contract object
-//const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://127.0.0.1:7545'));
-//let contractweb3 = web3.eth.Contract(abi,contractAddress);
-let contract = new ethers.Contract(contractAddress, abi, provider);
-let privateKey = '0x7821dbd2d2ad113c4dc75d4a3f64b5635184ea47e8bdb448e8e260eea36d24b5';
-const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws'));
-let contractweb3 = web3.eth.Contract(abi,contractAddress);
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
+let contractweb3 = new web3.eth.Contract(abi,contractAddress);
 let myECDH = crypto.createECDH('secp256k1');
 myECDH.setPrivateKey('7821dbd2d2ad113c4dc75d4a3f64b5635184ea47e8bdb448e8e260eea36d24b5','hex');
 
@@ -49,7 +44,7 @@ async function getPubkeyByAddress(address) {
       to: tx.to,
       value: ethJsUtil.bufferToHex(new ethJsUtil.BN(tx.value)),
       data: tx.input,
-      chainId: 5777,
+      chainId: 3,
       r: tx.r,
       s: tx.s,
       v: tx.v,
@@ -82,14 +77,12 @@ async function prepareConfirmation(block, witnessID) {
 
 
 async function main() {
-  const pubsub = new PubSub({ redisUrl: 'redis://127.0.0.1:6379' });
+  let redisIP = '127.0.0.1';
+  if (process.argv.length > 2) redisIP = process.argv[2];
+  console.log("redis",redisIP);
+  const pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
 
-  //await registerWitness();
-  //await registerDevice();
-
-  //console.log(deviceList);
-  //let Bs = blockValidation.createSelection('khdsiji');
-  const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws'));
+  const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
   console.log('Connected to Infura.');
 
   const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
@@ -97,7 +90,6 @@ async function main() {
 
     console.log('Successfully subscribed!', blockHeader);
   }).on('data', async function (blockHeader) {
-   // pubsub.broadcastMessage();
     console.log('new block',blockHeader.hash);
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, '0x7c28Bd7998B03a6Aeb516f35c448C76eDb3b7245');
     console.log('for ', blockHeader.hash);
@@ -114,25 +106,3 @@ async function main() {
 main();
 
 
-// let bf = new BloomFilter({ size:1024, fillRate: 0.5 });
-// bf.insert("hello",10);
-
-// const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws'));
-// const pubsub = new PubSub({ redisUrl: 'redis://127.0.0.1:6379' });
-
-// console.log('Connected to Infura.');
-// const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
-//   if (error) return console.error(error);
-
-//   console.log('Successfully subscribed!', blockHeader);
-// }).on('data', (blockHeader) => {
-//   pubsub.broadcastMessage();
-//   console.log('new block');
-// });
-
-// unsubscribes the subscription
-// subscription.unsubscribe((error, success) => {
-// if (error) return console.error(error);
-
-// console.log('Successfully unsubscribed!');
-// });
