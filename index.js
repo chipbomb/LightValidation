@@ -74,8 +74,8 @@ async function prepareConfirmation(block, witnessID) {
   return {passedDevices, secrets};
 }
 
-async function getAccount() {
-  var response = await request( { url: 'http://127.0.0.1:3000', method:'GET' } );
+async function getAccount(server) {
+  var response = await request( { url: `http://${server}:3000`, method:'GET' } );
   console.log(response);
   return JSON.parse(response);
 }
@@ -87,7 +87,7 @@ async function main() {
   console.log("redis",redisIP);
   const pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
   
-  var myAccount = await getAccount();
+  var myAccount = await getAccount(redisIP);
   console.log(myAccount.key);
 
 
