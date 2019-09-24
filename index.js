@@ -48,7 +48,7 @@ async function getPubkeyByAddress(address) {
       r: tx.r,
       s: tx.s,
       v: tx.v,
-  }).getSenderPublicKey();
+  }, { chain: 'ropsten', hardfork: 'petersburg' }).getSenderPublicKey();
   return pk; 
 }
 
