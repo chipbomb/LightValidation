@@ -7,6 +7,7 @@ const Transaction = require('ethereumjs-tx').Transaction;
 const ethJsUtil = require('ethereumjs-util');
 const request = require('request-promise');
 const logger = require('./logger');
+const util = require('util');
 
 var contractAddress = '0x5C4e471d9c2ac9736C4b00E5E3072e5f02919853';
 let provider = new ethers.providers.JsonRpcProvider('https://ropsten.infura.io/v3/2b32da7c679a43d1840be1845ff19ae8');
@@ -55,7 +56,7 @@ async function getPubkeyByAddress(address) {
 
 async function prepareConfirmation(block, witnessID) {
   let Bw = blockValidation.createWhitelist(block, witnessID);
-  console.log("Whitelist ", Bw.intRep.toString(2));
+  logger.debug(util.format("Whitelist ", Bw.intRep.toString(2)));
   let deviceList = await contractweb3.methods.getDeviceList().call();
   let passedDevices = [];
   let secrets = [];
@@ -77,7 +78,7 @@ async function prepareConfirmation(block, witnessID) {
 
 async function getAccount(server) {
   var response = await request( { url: `http://${server}:3000`, method:'GET' } );
-  console.log(response);
+  logger.verbose(response);
   return JSON.parse(response);
 }
 
@@ -103,7 +104,7 @@ async function main() {
 
     logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', async function (blockHeader) {
-    logger.info('new block',blockHeader.hash);
+    logger.info(util.format('new block',blockHeader.hash));
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
     logger.verbose("passed devices:", passedDevices.length);
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
