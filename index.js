@@ -107,7 +107,7 @@ async function main() {
     console.log('for ', blockHeader.hash);
     console.log(passedDevices.length);
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
-    pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Bc': Bc }));
+    pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
     console.log(JSON.stringify(Bc));
   });
 
