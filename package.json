@@ -16,6 +16,8 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "secp256k1": "^3.7.1",
-    "web3": "^1.0.0-beta.55"
+    "web3": "^1.0.0-beta.55",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.2.1"
   }
 }

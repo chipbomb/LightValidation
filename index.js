@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const Transaction = require('ethereumjs-tx').Transaction;
 const ethJsUtil = require('ethereumjs-util');
 const request = require('request-promise');
+const logger = require('./logger');
 
 var contractAddress = '0x5C4e471d9c2ac9736C4b00E5E3072e5f02919853';
 let provider = new ethers.providers.JsonRpcProvider('https://ropsten.infura.io/v3/2b32da7c679a43d1840be1845ff19ae8');
@@ -84,34 +85,32 @@ async function getAccount(server) {
 async function main() {
   let redisIP = '127.0.0.1';
   if (process.argv.length > 2) redisIP = process.argv[2];
-  console.log("redis",redisIP);
+  logger.info("redis",redisIP);
   const pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
   
   var myAccount = await getAccount(redisIP);
-  console.log(myAccount.key);
+  logger.info(myAccount.key);
 
 
   myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2),'hex');
 
   const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
-  console.log('Connected to Infura.');
+  logger.info('Connected to Infura.');
 
   const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
-    if (error) return console.error(error);
+    if (error) return logger.error(error);
 
-    console.log('Successfully subscribed!', blockHeader);
+    logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', async function (blockHeader) {
-    console.log('new block',blockHeader.hash);
+    logger.info('new block',blockHeader.hash);
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
-    console.log('for ', blockHeader.hash);
-    console.log(passedDevices.length);
+    logger.verbose("passed devices:", passedDevices.length);
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
     pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
-    console.log(JSON.stringify(Bc));
+    logger.verbose(JSON.stringify(Bc));
   });
 
-  console.log("done");
 
 }
 

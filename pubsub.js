@@ -1,5 +1,5 @@
 const redis = require('redis');
-
+const logger = require('./logger');
 
 const CHANNELS = {
   TEST: 'TEST',
@@ -21,7 +21,7 @@ class PubSub {
   }
 
   handleMessage(channel, message) {
-    console.log(`Message received. Channel: ${channel}. Message: ${message}.`);
+    logger.info(`Message received. Channel: ${channel}. Message: ${message}.`);
 
     const parsedMessage = JSON.parse(message);
 
@@ -37,7 +37,7 @@ class PubSub {
         this.transactionPool.setTransaction(parsedMessage);
         break;
       case CHANNELS.WITNESS:
-        console.log('received new confirmation');
+        logger.verbose('received new confirmation');
       default:
         return;
     }
@@ -77,7 +77,7 @@ class PubSub {
       channel: CHANNELS.WITNESS,
       message: msg
     });
-    console.log("broadcast confirmation")
+    logger.verbose("broadcast confirmation")
   }
 }
 
