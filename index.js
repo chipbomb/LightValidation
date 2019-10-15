@@ -106,7 +106,7 @@ async function main() {
   }).on('data', async function (blockHeader) {
     logger.info(util.format('new block',blockHeader.hash));
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
-    logger.verbose("passed devices:", passedDevices.length);
+    logger.verbose(util.format("passed devices:", passedDevices.length));
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
     pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
     logger.verbose(JSON.stringify(Bc));
