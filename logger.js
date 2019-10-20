@@ -13,7 +13,8 @@ if (!fs.existsSync(logDir)) {
 
 const dailyRotateFileTransport = new transports.DailyRotateFile({
     filename: `${logDir}/%DATE%-results.log`,
-    datePattern: 'YYYY-MM-DD'
+    datePattern: 'YYYY-MM-DD',
+    level: 'debug'
   });
 
 
