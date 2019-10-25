@@ -7,7 +7,7 @@ const os = require('os');
 require('winston-daily-rotate-file');
 
 const env = process.env.NODE_ENV || 'development';
-const logDir = '/home/cc/my_mounting_point';
+const logDir = 'log';
 
 //Create the log directory if it does not exist
 if (!fs.existsSync(logDir)) {
