@@ -31,6 +31,9 @@ fs = 0.5;
 fc = 0.5;
 fw = 0.5;
 
+let duration = 60 * 60 * 1000;
+if (process.argv.length > 3) duration = process.argv[3] * 60 * 1000;
+
 let blockValidation = new BlockValidation(ms,ks,fs,mc,kc,fc,mw,kw,fw);
 
 async function getPubkeyByAddress(address) {
@@ -117,4 +120,7 @@ async function main() {
 
 main();
 
-
+setTimeout(() => {
+  console.log('Task completed');
+  return process.exit(22);
+}, duration);
