@@ -3,10 +3,11 @@ const { combine, timestamp, label, printf } = format;
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 require('winston-daily-rotate-file');
 
 const env = process.env.NODE_ENV || 'development';
-const logDir = 'log';
+const logDir = `/home/cc/my_mounting_point/${os.hostname()}`;
 
 // Create the log directory if it does not exist
 if (!fs.existsSync(logDir)) {
