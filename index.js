@@ -105,7 +105,7 @@ async function main() {
   const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
     if (error) return logger.error(error);
 
-    logger.info('Successfully subscribed!', blockHeader.hash);
+    //logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', async function (blockHeader) {
     logger.info(util.format('new block',blockHeader.hash));
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
@@ -121,6 +121,6 @@ async function main() {
 main();
 
 setTimeout(() => {
-  console.log('Task completed');
+  logger.info('Task completed');
   return process.exit(22);
 }, duration);
