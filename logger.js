@@ -7,15 +7,15 @@ const os = require('os');
 require('winston-daily-rotate-file');
 
 const env = process.env.NODE_ENV || 'development';
-const logDir = `/home/cc/my_mounting_point/${os.hostname()}`;
+const logDir = '/home/cc/my_mounting_point';
 
 // Create the log directory if it does not exist
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
+// if (!fs.existsSync(logDir)) {
+//   fs.mkdirSync(logDir);
+// }
 
 const dailyRotateFileTransport = new transports.DailyRotateFile({
-    filename: `${logDir}/%DATE%-results.log`,
+    filename: `${logDir}/${os.hostname()}-%DATE%-results.log`,
     datePattern: 'YYYY-MM-DD',
     level: 'debug'
   });
