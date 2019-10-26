@@ -39,7 +39,8 @@ class PubSub {
         this.transactionPool.setTransaction(parsedMessage);
         break;
       case CHANNELS.WITNESS:
-        if (!this.logData.find(obj => obj.hash === parsedMessage.Block)) {
+        var block = this.logData.find(obj => obj.hash === parsedMessage.Block);
+        if (!block) {
           console.log('not found');
           let block = {
             hash: parsedMessage.Block,
@@ -50,7 +51,7 @@ class PubSub {
         }
         else {
           console.log('found');
-          this.logData[parsedMessage.Block].confirmMsg.push(new Date().getTime);
+          block.confirmMsg.push(new Date().getTime);
         }
         //logger.verbose('received new confirmation');
         break;
