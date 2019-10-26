@@ -108,7 +108,6 @@ async function main() {
     //logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', async function (blockHeader) {
     logger.info(util.format('new block',blockHeader.hash));
-    logData.push( {block: blockHeader.hash} );
     pubsub.updateLog(blockHeader.hash);
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
     logger.verbose(util.format("passed devices:", passedDevices.length));
