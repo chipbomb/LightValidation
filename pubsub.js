@@ -40,6 +40,7 @@ class PubSub {
         break;
       case CHANNELS.WITNESS:
         if (!this.logData.find(obj => obj.hash === parsedMessage.Block)) {
+          console.log('not found');
           let block = {
             hash: parsedMessage.Block,
             received: 0,
@@ -47,9 +48,10 @@ class PubSub {
           };
           this.logData.push(block);
         }
-        else
+        else {
+          console.log('found');
           this.logData[parsedMessage.Block].confirmMsg.push(new Date().getTime);
-       
+        }
         //logger.verbose('received new confirmation');
         break;
       default:
