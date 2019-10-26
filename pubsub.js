@@ -45,13 +45,13 @@ class PubSub {
           let block = {
             hash: parsedMessage.Block,
             received: 0,
-            confirmMsg: [new Date().getTime()]
+            confirmMsg: [Date().getTime()]
           };
           this.logData.push(block);
         }
         else {
           console.log('found');
-          block.confirmMsg.push(new Date().getTime);
+          block.confirmMsg.push(Date().getTime);
         }
         //logger.verbose('received new confirmation');
         break;
