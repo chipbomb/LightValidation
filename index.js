@@ -20,6 +20,7 @@ var abi = JSON.parse(
 const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
 let contractweb3 = new web3.eth.Contract(abi,contractAddress);
 var myECDH;
+var pubsub;
 
 ms = 256;
 mc = 256;
@@ -90,7 +91,7 @@ async function main() {
   let redisIP = '127.0.0.1';
   if (process.argv.length > 2) redisIP = process.argv[2];
   logger.info("redis",redisIP);
-  const pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
+  pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
   
   var myAccount = await getAccount(redisIP);
   logger.info(myAccount.key);
