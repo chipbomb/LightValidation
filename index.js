@@ -131,6 +131,7 @@ setTimeout(() => {
     numConfirm += block.confirmMsg.length;
     delay += Math.max(...block.confirmMsg) - block.received;
   });
+  console.log(pubsub.logdata);
   logger.info('Task completed');
   logger.info('SUMMARY:');
   logger.info(util.format('Total blocks: ', pubsub.logData.length));
