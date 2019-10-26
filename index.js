@@ -108,6 +108,8 @@ async function main() {
     //logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', async function (blockHeader) {
     logger.info(util.format('new block',blockHeader.hash));
+    logData.push( {block: blockHeader.hash} );
+    pubsub.updateLog(blockHeader.hash);
     let {passedDevices, secrets} = await prepareConfirmation(blockHeader.hash, myAccount.account);
     logger.verbose(util.format("passed devices:", passedDevices.length));
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
@@ -121,6 +123,18 @@ async function main() {
 main();
 
 setTimeout(() => {
+  // calculate some statistics
+  let numBlock = pubsub.logData.length;
+  let numConfirm = 0;
+  let delay = 0;
+  pubsub.logData.forEach(function(block) {
+    numConfirm += block.confirmMsg.length;
+    delay += Math.max(...block.confirmMsg) - block.received;
+  });
   logger.info('Task completed');
+  logger.info('SUMMARY:');
+  logger.info(util.format('Total blocks: ', pubsub.logData.length));
+  logger.info(util.format('Average confirmations per block:', numConfirm/numBlock));
+  logger.info(util.format('Average delay per block', delay/numBlock));
   return process.exit(22);
 }, duration);

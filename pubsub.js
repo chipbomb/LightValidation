@@ -7,6 +7,7 @@ const CHANNELS = {
   WITNESS: 'WITNESS'
 };
 
+
 class PubSub {
   constructor({ redisUrl }) {
     this.publisher = redis.createClient(redisUrl);
@@ -18,6 +19,7 @@ class PubSub {
       'message', 
       (channel, message) => this.handleMessage(channel, message)
     );
+    this.logData = [];
   }
 
   handleMessage(channel, message) {
@@ -37,7 +39,19 @@ class PubSub {
         this.transactionPool.setTransaction(parsedMessage);
         break;
       case CHANNELS.WITNESS:
-        logger.verbose('received new confirmation');
+        if (!this.logData.find(obj => obj.hash === parsedMessage.Block)) {
+          let block = {
+            hash: parsedMessage.Block,
+            received: 0,
+            confirmMsg: [new Date().getTime()]
+          };
+          this.logData.push(block);
+        }
+        else
+          this.logData[parsedMessage.Block].confirmMsg.push(new Date().getTime);
+       
+        //logger.verbose('received new confirmation');
+        break;
       default:
         return;
     }
@@ -78,6 +92,15 @@ class PubSub {
       message: msg
     });
     logger.verbose("broadcast confirmation")
+  }
+
+  updateLog(blockHash) {
+    let block = {
+      hash: blockHash,
+      received: new Date().getTime(),
+      confirmMsg: []
+    };
+    this.logData.push(block);
   }
 }
 
