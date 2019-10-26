@@ -126,17 +126,22 @@ setTimeout(() => {
   // calculate some statistics
   console.log(pubsub.logData);
   let numBlock = pubsub.logData.length;
+  let numBlockwithConfirm = 0;
   let numConfirm = 0;
   let delay = 0;
   pubsub.logData.forEach(function(block) {
     numConfirm += block.confirmMsg.length;
-    delay += Math.max(...block.confirmMsg) - block.received;
+    if (block.confirmMsg.length > 0) {
+      numBlockwithConfirm++;
+      delay += Math.max(...block.confirmMsg) - block.received;
+    }
   });
 
   logger.info('Task completed');
   logger.info('SUMMARY:');
-  logger.info(util.format('Total blocks: ', pubsub.logData.length));
-  logger.info(util.format('Average confirmations per block:', numConfirm/numBlock));
-  logger.info(util.format('Average delay per block', delay/numBlock));
+  logger.info(util.format('Total blocks: ', numBlock));
+  logger.info(util.format('Total blocks with confirmations: ', numBlockwithConfirm));
+  logger.info(util.format('Average confirmations per block:', numConfirm/numBlockwithConfirm));
+  logger.info(util.format('Average delay per block (ms)', delay/numBlockwithConfirm));
   return process.exit(22);
 }, duration);
