@@ -124,7 +124,7 @@ main();
 
 setTimeout(() => {
   // calculate some statistics
-  console.log(pubsub.logData);
+  //console.log(pubsub.logData);
   let numBlock = pubsub.logData.length;
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
