@@ -137,11 +137,13 @@ setTimeout(() => {
     }
   });
 
-  logger.info('Task completed');
+  //logger.info('Task completed');
   logger.info('SUMMARY:');
   logger.info(util.format('Total blocks: ', numBlock));
   logger.info(util.format('Total blocks with confirmations: ', numBlockwithConfirm));
   logger.info(util.format('Average confirmations per block:', numConfirm/numBlockwithConfirm));
   logger.info(util.format('Average delay per block (ms)', delay/numBlockwithConfirm));
-  return process.exit(22);
+  setTimeout( () => {
+    return process.exit(22);
+  }, 5000);
 }, duration);
