@@ -106,7 +106,7 @@ let fs = args.fs ;
 let fc = args.fc ;
 let fw = args.fw ;
 
-let duration = args.d ;
+let duration = args.d * 60 * 1000 ;
 let redisIP = args.s;
 
 let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
