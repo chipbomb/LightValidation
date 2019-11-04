@@ -4,6 +4,7 @@ const { combine, timestamp, label, printf } = format;
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const process = require('process');
 require('winston-daily-rotate-file');
 
 const env = process.env.NODE_ENV || 'development';
@@ -16,7 +17,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 const dailyRotateFileTransport = new transports.DailyRotateFile({
-    filename: `${logDir}/${os.hostname()}-${args.test}-%DATE%-results.log`,
+    filename: `${logDir}/${os.hostname()}-${process.pid}-${args.test}-%DATE%-results.log`,
     datePattern: 'YYYY-MM-DD',
     level: 'debug'
   });
