@@ -139,7 +139,7 @@ async function prepareConfirmation(block, witnessID) {
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
-  for (i = 0; i < args.ND ; i++) {
+  for (i = 0; i < args.ND && passedDevices.length < 90 ; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", device);
     if (blockValidation.checkWhitelist(device+i, Bw) && device !== 0) {
