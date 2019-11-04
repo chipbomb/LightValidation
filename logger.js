@@ -8,6 +8,7 @@ require('winston-daily-rotate-file');
 
 const env = process.env.NODE_ENV || 'development';
 const logDir = 'log';
+var args = require('yargs').argv;
 
 //Create the log directory if it does not exist
 if (!fs.existsSync(logDir)) {
@@ -15,7 +16,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 const dailyRotateFileTransport = new transports.DailyRotateFile({
-    filename: `${logDir}/${os.hostname()}-%DATE%-results.log`,
+    filename: `${logDir}/${os.hostname()}-${args.test}-%DATE%-results.log`,
     datePattern: 'YYYY-MM-DD',
     level: 'debug'
   });
