@@ -203,7 +203,8 @@ setTimeout(() => {
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
   let delay = 0;
-  pubsub.logData.forEach(function (block) {
+  for (i = 2; i < pubsub.logData.length-2) {
+    var block = pubsub.logData[i];
     logger.info(block.hash);
     numConfirm += block.confirmMsg.length;
     if (block.confirmMsg.length > 0) {
