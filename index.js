@@ -142,7 +142,7 @@ async function prepareConfirmation(block, witnessID) {
   for (i = 0; i < args.ND ; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", device);
-    if (blockValidation.checkWhitelist(device, Bw) && device !== 0) {
+    if (blockValidation.checkWhitelist(device+i, Bw) && device !== 0) {
       //console.log("passed");
       passedDevices.push(device);
       let devPubkey = await getPubkeyByAddress(device);
