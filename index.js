@@ -212,7 +212,7 @@ setTimeout(() => {
       numBlockwithConfirm++;
       delay += Math.max(...block.confirmMsg) - block.received;
     }
-  });
+  }
 
   //logger.info('Task completed');
   logger.info('SUMMARY:');
