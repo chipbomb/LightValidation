@@ -207,7 +207,7 @@ setTimeout(() => {
     var block = pubsub.logData[i];
     logger.info(block.hash);
     numConfirm += block.confirmMsg.length;
-    if (block.confirmMsg.length > 0) {
+    if (block.confirmMsg.length > 0 && block.received > 0) {
 
       numBlockwithConfirm++;
       delay += Math.max(...block.confirmMsg) - block.received;
