@@ -51,6 +51,7 @@ class BlockValidation {
       Bw.insert(codeWord, this.kw);
       i++;
     }
+    //console.log("set bits ", Bw.countSetBits());
     return Bw;
   }
 

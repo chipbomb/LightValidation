@@ -64,7 +64,7 @@ class BloomFilter {
     let countBits = 0;
     let countSetBits = 0;
     //console.log("itemHash", itemHash);
-    for(let i = 0; i < itemHash.length && countBits < 15 ; ++i)
+    for(let i = 0; i < itemHash.length && countBits < k ; ++i)
     {
       let cur = itemHash[i];
       let offset = i * 8;
@@ -89,8 +89,8 @@ class BloomFilter {
         cur >>= 1;  // Move to next bit in array
       }
     }
-    //console.log(countBits);
-    if (countSetBits < k) return false;
+    //console.log("countsetbits", countSetBits);
+    if (countSetBits != k) return false;
     return true;
   }
 

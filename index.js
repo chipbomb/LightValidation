@@ -58,7 +58,7 @@ var args = require('yargs')
       type: 'number'
     },
     'd': {
-      default: 60*60*1000,
+      default: 60,
       describe: 'duration',
       type: 'number'
     },
@@ -139,7 +139,7 @@ async function prepareConfirmation(block, witnessID) {
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
-  for (i = 0; i < args.ND && passedDevices.length < 90 ; i++) {
+  for (i = 0; i < args.ND ; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", device);
     if (blockValidation.checkWhitelist(device+i, Bw) && device !== 0) {
@@ -216,7 +216,7 @@ setTimeout(() => {
 
   //logger.info('Task completed');
   logger.info('SUMMARY:');
-  logger.info(ms, mc, mw, ks, kc, kw, fs, fc, fw, duration, redisIP);
+  logger.info(util.format(ms, mc, mw, ks, kc, kw, fs, fc, fw, duration, redisIP));
   logger.info(util.format('Total blocks: ', numBlock));
   logger.info(util.format('Total blocks with confirmations: ', numBlockwithConfirm));
   logger.info(util.format('Average confirmations per block:', numConfirm / numBlockwithConfirm));
