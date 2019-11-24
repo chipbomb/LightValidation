@@ -111,6 +111,8 @@ let redisIP = args.s;
 
 let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
 
+var sharedSecrets;
+
 async function getPubkeyByAddress(address) {
   var filter = { device: address };
   let events = await contractweb3.getPastEvents('DeviceRegistered', { filter, fromBlock: 0, toBlock: 'latest' });
@@ -132,17 +134,32 @@ async function getPubkeyByAddress(address) {
   return pk;
 }
 
+async function computeSharedSecrets(ND) {
+  let secrets = [];
+  for (let i = 0; i < ND; i++) {
+    console.log(i);
+    let deviceList = await contractweb3.methods.getDeviceList().call();
+    let trueND = deviceList.length;
+    let device = deviceList[i % trueND];
+    let devPubkey = await getPubkeyByAddress(device);
+    let sharedSecret = myECDH.computeSecret(Buffer.concat([Buffer.from('04', 'hex'), devPubkey]));
+    secrets.push(sharedSecret);
+  }
+  return secrets;
+}
+
+
 async function prepareConfirmation(block, witnessID) {
   let Bw = blockValidation.createWhitelist(block, witnessID);
-  logger.debug(util.format("Whitelist ", Bw.intRep.toString(2)));
+  //logger.debug(util.format("Whitelist ", Bw.intRep.toString(2)));
   let deviceList = await contractweb3.methods.getDeviceList().call();
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
-  for (i = 0; i < args.ND ; i++) {
+  for (var i = 0; i < args.ND ; i++) {
     let device = deviceList[i % trueND];
-    //console.log("Check", device);
-    if (blockValidation.checkWhitelist(device+i, Bw) && device !== 0) {
+    //console.log("Check", i);
+    if (blockValidation.checkWhitelist(device+i+block, Bw) && device !== 0) {
       //console.log("passed");
       passedDevices.push(device);
       let devPubkey = await getPubkeyByAddress(device);
@@ -152,6 +169,7 @@ async function prepareConfirmation(block, witnessID) {
       secrets.push(sharedSecret);
     }
   }
+  logger.debug(util.format("Done check", i, block));
   return { passedDevices, secrets };
 }
 
@@ -164,15 +182,17 @@ async function getAccount(server) {
 
 async function main() {
   //if (process.argv.length > 2) redisIP = process.argv[2];
-  logger.info("redis", redisIP);
+  logger.info(util.format("redis", redisIP));
+  blockValidation.chooseBw(args.ND);
+  logger.info(util.format('Bw params:', blockValidation.fw, blockValidation.mw, blockValidation.kw));
   pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
 
   var myAccount = await getAccount(redisIP);
   logger.info(myAccount.key);
 
-
   myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2), 'hex');
+  //sharedSecrets = await computeSharedSecrets(args.ND);
 
   const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
   logger.info('Connected to Infura.');

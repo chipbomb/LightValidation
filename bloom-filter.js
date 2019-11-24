@@ -78,6 +78,9 @@ class BloomFilter {
           countBits++;
           let mask = bigInt(1).shiftLeft(index);
           //this.intRep = this.intRep.or(mask);
+
+          //console.log("Whitelist ", this.intRep.toString(2));
+          //console.log("Mask      ", mask.toString(2));
           if (!this.intRep.and(mask).isZero()) { // is set
             //console.log("matched");
             countSetBits++;
