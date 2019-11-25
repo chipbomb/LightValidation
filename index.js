@@ -111,7 +111,7 @@ let redisIP = args.s;
 
 let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
 
-var sharedSecrets;
+var sharedSecrets = {};
 
 async function getPubkeyByAddress(address) {
   var filter = { device: address };
@@ -162,11 +162,18 @@ async function prepareConfirmation(block, witnessID) {
     if (blockValidation.checkWhitelist(device+i+block, Bw) && device !== 0) {
       //console.log("passed");
       passedDevices.push(device);
-      let devPubkey = await getPubkeyByAddress(device);
-      //console.log(block,devPubkey.toString('hex'));
-      let sharedSecret = myECDH.computeSecret(Buffer.concat([Buffer.from('04', 'hex'), devPubkey]));
-      //console.log("secret", sharedSecret);
-      secrets.push(sharedSecret);
+      var s;
+      if (!(device in sharedSecrets)) {
+        let devPubkey = await getPubkeyByAddress(device);
+        //console.log(block,devPubkey.toString('hex'));
+        s = myECDH.computeSecret(Buffer.concat([Buffer.from('04', 'hex'), devPubkey]));
+        sharedSecrets[device] = s;
+      }
+      else 
+        s = sharedSecrets[device];
+      
+      //console.log("secret", s);
+      secrets.push(s);
     }
   }
   logger.debug(util.format("Done check", i, block));
@@ -208,7 +215,7 @@ async function main() {
     logger.verbose(util.format("passed devices:", passedDevices.length));
     let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
     pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
-    logger.verbose(JSON.stringify(Bc));
+    //logger.verbose(JSON.stringify(Bc));
   });
 
 
