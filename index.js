@@ -81,7 +81,7 @@ var args = require('yargs')
 
   })
   .argv
-;
+  ;
 
 var contractAddress = '0x5C4e471d9c2ac9736C4b00E5E3072e5f02919853';
 let provider = new ethers.providers.JsonRpcProvider('https://ropsten.infura.io/v3/2b32da7c679a43d1840be1845ff19ae8');
@@ -96,23 +96,23 @@ let contractweb3 = new web3.eth.Contract(abi, contractAddress);
 var myECDH;
 var pubsub;
 
-let ms = args.ms ;
-let mc = args.mc ;
-let mw = args.mw ;
-let ks = args.ks ;
+let ms = args.ms;
+let mc = args.mc;
+let mw = args.mw;
+let ks = args.ks;
 let kc = args.kc;
 let kw = args.kw;
-let fs = args.fs ;
-let fc = args.fc ;
-let fw = args.fw ;
+let fs = args.fs;
+let fc = args.fc;
+let fw = args.fw;
 
-let duration = args.d * 60 * 1000 ;
+let duration = args.d * 60 * 1000;
 let redisIP = args.s;
 
 let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
 
 var sharedSecrets = {};
-
+var subscription;
 async function getPubkeyByAddress(address) {
   var filter = { device: address };
   let events = await contractweb3.getPastEvents('DeviceRegistered', { filter, fromBlock: 0, toBlock: 'latest' });
@@ -156,10 +156,10 @@ async function prepareConfirmation(block, witnessID) {
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
-  for (var i = 0; i < args.ND ; i++) {
+  for (var i = 0; i < args.ND; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", i);
-    if (blockValidation.checkWhitelist(device+i+block, Bw) && device !== 0) {
+    if (blockValidation.checkWhitelist(device + i + block, Bw) && device !== 0) {
       //console.log("passed");
       passedDevices.push(device);
       var s;
@@ -169,9 +169,9 @@ async function prepareConfirmation(block, witnessID) {
         s = myECDH.computeSecret(Buffer.concat([Buffer.from('04', 'hex'), devPubkey]));
         sharedSecrets[device] = s;
       }
-      else 
+      else
         s = sharedSecrets[device];
-      
+
       //console.log("secret", s);
       secrets.push(s);
     }
@@ -204,14 +204,14 @@ async function main() {
   const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
   logger.info('Connected to Infura.');
 
-  const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
+  subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
     if (error) return logger.error(error);
 
     //logger.info('Successfully subscribed!', blockHeader.hash);
-  }).on('data', async function (blockHeader) {
+  }).on('data', function (blockHeader) {
     logger.info(util.format('new block', blockHeader.hash));
     pubsub.updateLog(blockHeader.hash);
-    prepareConfirmation(blockHeader.hash, myAccount.account).then(function({passedDevices, secrets}){
+    prepareConfirmation(blockHeader.hash, myAccount.account).then(function ({ passedDevices, secrets }) {
       logger.verbose(util.format("passed devices:", passedDevices.length));
       let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
       pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
@@ -220,7 +220,7 @@ async function main() {
     // logger.verbose(util.format("passed devices:", passedDevices.length));
     // let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
     // pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
-    
+
   });
 
 
@@ -231,16 +231,20 @@ main();
 setTimeout(() => {
   // calculate some statistics
   //console.log(pubsub.logData);
+  subscription.unsubscribe(function (error, success) {
+    if (success)
+      console.log('Stop listening...');
+  });
   let numBlock = pubsub.logData.length;
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
   let delay = 0;
-  for (i = 2; i < pubsub.logData.length-2; i++) {
+  for (i = 2; i < pubsub.logData.length - 2; i++) {
     var block = pubsub.logData[i];
-    logger.info(block.hash);
+
     numConfirm += block.confirmMsg.length;
     if (block.confirmMsg.length > 0 && block.received > 0) {
-
+      logger.verbose(util.format(block.hash, Math.max(...block.confirmMsg), block.received));
       numBlockwithConfirm++;
       delay += Math.max(...block.confirmMsg) - block.received;
     }
