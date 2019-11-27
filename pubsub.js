@@ -43,6 +43,7 @@ class PubSub {
         if (!block) {
           let block = {
             hash: parsedMessage.Block,
+            broadcast: 0,
             received: 0,
             confirmMsg: [ new Date().getTime()]
           };
@@ -88,17 +89,20 @@ class PubSub {
     });
   }
 
-  broadcastMessage(msg) {
+  broadcastMessage(msg, blockHash) {
     this.publish({
       channel: CHANNELS.WITNESS,
       message: msg
     });
+    let block = this.logData.find(obj => obj.hash === blockHash);
+    block.broadcast = new Date().getTime();
     logger.verbose("broadcast confirmation")
   }
 
   updateLog(blockHash) {
     let block = {
       hash: blockHash,
+      broadcast: 0,
       received: new Date().getTime(),
       confirmMsg: []
     };

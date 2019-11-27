@@ -214,7 +214,7 @@ async function main() {
     prepareConfirmation(blockHeader.hash, myAccount.account).then(function ({ passedDevices, secrets }) {
       logger.verbose(util.format("passed devices:", passedDevices.length));
       let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
-      pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
+      pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }), blockHeader.hash);
     });
     // let { passedDevices, secrets } = await prepareConfirmation(blockHeader.hash, myAccount.account);
     // logger.verbose(util.format("passed devices:", passedDevices.length));
@@ -239,12 +239,13 @@ setTimeout(() => {
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
   let delay = 0;
+  logger.verbose(util.format("summary", "block", "received", "broadcast", "last-confirm", "total-confirm"));
   for (i = 2; i < pubsub.logData.length - 2; i++) {
     var block = pubsub.logData[i];
 
     numConfirm += block.confirmMsg.length;
+    logger.verbose(util.format("summary", block.hash, block.received, block.broadcast, Math.max(...block.confirmMsg), block.confirmMsg.length ));
     if (block.confirmMsg.length > 0 && block.received > 0) {
-      logger.verbose(util.format(block.hash, Math.max(...block.confirmMsg), block.received));
       numBlockwithConfirm++;
       delay += Math.max(...block.confirmMsg) - block.received;
     }
