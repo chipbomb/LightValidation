@@ -2,7 +2,6 @@ const redis = require('redis');
 const logger = require('./logger');
 
 const CHANNELS = {
-  TEST: 'TEST',
   BLOCKCHAIN: 'BLOCKCHAIN',
   WITNESS: 'WITNESS'
 };
@@ -73,6 +72,12 @@ class PubSub {
       });
     });
 
+  }
+
+  disconnect() {
+    Object.values(CHANNELS).forEach((channel) => {
+      this.subscriber.unsubscribe(channel, () => logger.info("disconnect redis"));
+    });
   }
 
   broadcastChain() {

@@ -233,8 +233,9 @@ setTimeout(() => {
   //console.log(pubsub.logData);
   subscription.unsubscribe(function (error, success) {
     if (success)
-      console.log('Stop listening...');
+      logger.info('Stop listening...');
   });
+  pubsub.disconnect();
   let numBlock = pubsub.logData.length;
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
@@ -260,5 +261,5 @@ setTimeout(() => {
   logger.info(util.format('Average delay per block (ms)', delay / numBlockwithConfirm));
   setTimeout(() => {
     return process.exit(22);
-  }, 5000);
+  }, 3000);
 }, duration);
