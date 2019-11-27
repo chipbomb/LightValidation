@@ -15,7 +15,7 @@ class PubSub {
     this.subscribeToChannel();
 
     this.subscriber.on(
-      'message', 
+      'message',
       (channel, message) => this.handleMessage(channel, message)
     );
     this.logData = [];
@@ -26,7 +26,7 @@ class PubSub {
 
     const parsedMessage = JSON.parse(message);
 
-    switch(channel) {
+    switch (channel) {
       case CHANNELS.BLOCKCHAIN:
         this.blockchain.replaceChain(parsedMessage, true, () => {
           this.transactionPool.clearBlockchainTransactions({
@@ -44,7 +44,7 @@ class PubSub {
             hash: parsedMessage.Block,
             broadcast: 0,
             received: 0,
-            confirmMsg: [ new Date().getTime()]
+            confirmMsg: [new Date().getTime()]
           };
           this.logData.push(block);
         }
@@ -66,11 +66,14 @@ class PubSub {
   }
 
   publish({ channel, message }) {
-    this.subscriber.unsubscribe(channel, () => {
-      this.publisher.publish(channel, message, () => {
-        this.subscriber.subscribe(channel);
-      });
+    this.publisher.publish(channel, message, () => {
+      logger.verbose("published message");
     });
+    // this.subscriber.unsubscribe(channel, () => {
+    //   this.publisher.publish(channel, message, () => {
+    //     this.subscriber.subscribe(channel);
+    //   });
+    // });
 
   }
 
@@ -81,7 +84,7 @@ class PubSub {
   }
 
   broadcastChain() {
-    this.publish({ 
+    this.publish({
       channel: CHANNELS.BLOCKCHAIN,
       message: JSON.stringify(this.blockchain.chain)
     });
