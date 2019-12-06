@@ -35,12 +35,12 @@ const logger = createLogger({
     myFormat
   ),
   transports: [
-    // new transports.Console({
-    //   format: format.combine(
-    //     format.colorize(),
-    //     myFormat
-    //   )
-    // }),
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        myFormat
+      )
+    }),
     dailyRotateFileTransport
   ]
 });
