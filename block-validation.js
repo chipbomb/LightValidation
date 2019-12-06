@@ -1,6 +1,7 @@
 const BloomFilter = require('./bloom-filter');
 const crypto = require('crypto');
-
+const logger = require('./logger');
+const util = require('util');
 class BlockValidation {
   constructor(ms,ks,fs,mc,kc,fc,mw,kw,fw) {
     this.ms = ms;
@@ -41,16 +42,22 @@ class BlockValidation {
   }
 
   createWhitelist(block, witnessID) {
+    let start = new Date();
     let Bw = new BloomFilter({size: this.mw, fillRate: this.fw} );
     let i = 0;
     while (Bw.countSetBits() < Bw.size * Bw.fillRate) {
+      //let s = new Date();
       const hmac = crypto.createHmac('sha256', witnessID);
       hmac.update(i.toString());
       hmac.update(block);
       const codeWord = hmac.digest();
       Bw.insert(codeWord, this.kw);
       i++;
+      //let e = new Date();
+     // logger.debug(util.format("each iteration takes", (e-s)/1000));
     }
+    let end = new Date();
+    logger.debug(util.format("create whitelist takes", (end-start)/1000))
     //console.log("set bits ", Bw.countSetBits());
     return Bw;
   }

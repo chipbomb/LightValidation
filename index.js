@@ -112,6 +112,7 @@ let redisIP = args.s;
 let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
 
 var sharedSecrets = {};
+var deviceList;
 var subscription;
 async function getPubkeyByAddress(address) {
   var filter = { device: address };
@@ -152,10 +153,12 @@ async function computeSharedSecrets(ND) {
 async function prepareConfirmation(block, witnessID) {
   let Bw = blockValidation.createWhitelist(block, witnessID);
   //logger.debug(util.format("Whitelist ", Bw.intRep.toString(2)));
-  let deviceList = await contractweb3.methods.getDeviceList().call();
+  
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
+  let checkcount = 0;
+  logger.debug(util.format("starting compute", block));
   for (var i = 0; i < args.ND; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", i);
@@ -168,6 +171,7 @@ async function prepareConfirmation(block, witnessID) {
         //console.log(block,devPubkey.toString('hex'));
         s = myECDH.computeSecret(Buffer.concat([Buffer.from('04', 'hex'), devPubkey]));
         sharedSecrets[device] = s;
+        checkcount++;
       }
       else
         s = sharedSecrets[device];
@@ -176,7 +180,7 @@ async function prepareConfirmation(block, witnessID) {
       secrets.push(s);
     }
   }
-  logger.debug(util.format("Done check", i, block));
+  logger.debug(util.format("Done check", i, checkcount, block,));
   return { passedDevices, secrets };
 }
 
@@ -196,6 +200,9 @@ async function main() {
 
   var myAccount = await getAccount(redisIP);
   logger.info(myAccount.key);
+
+  deviceList = await contractweb3.methods.getDeviceList().call();
+  logger.info(util.format("Number of devices:", deviceList.length));
 
   myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2), 'hex');
@@ -241,14 +248,16 @@ setTimeout(() => {
   let numConfirm = 0;
   let delay = 0;
   logger.verbose(util.format("summary", "block", "received", "broadcast", "last-confirm", "total-confirm"));
-  for (i = 2; i < pubsub.logData.length - 2; i++) {
+  for (i = 0; i < pubsub.logData.length; i++) {
     var block = pubsub.logData[i];
-
-    numConfirm += block.confirmMsg.length;
-    logger.verbose(util.format("summary", block.hash, block.received, block.broadcast, Math.max(...block.confirmMsg), block.confirmMsg.length ));
-    if (block.confirmMsg.length > 0 && block.received > 0) {
-      numBlockwithConfirm++;
-      delay += Math.max(...block.confirmMsg) - block.received;
+    logger.verbose(util.format("summary", block.hash, block.received, block.broadcast, Math.max(...block.confirmMsg), block.confirmMsg.length));
+    if (i >= 2 && i < pubsub.logData.length - 2) {
+      numConfirm += block.confirmMsg.length;
+      
+      if (block.confirmMsg.length > 0 && block.received > 0) {
+        numBlockwithConfirm++;
+        delay += Math.max(...block.confirmMsg) - block.received;
+      }
     }
   }
 
