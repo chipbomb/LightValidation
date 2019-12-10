@@ -97,10 +97,12 @@ setInterval(() => {
   console.log("Total devices:", logData.length);
   logData.forEach(function(device){
     let count = 0;
+    let str = '';
     for (i = 0; i < device.blocks.length; i++) {
       count += device.blocks[i].count;
+      str += ` ${device.blocks[i].count}`
     }
-    console.log(device.id, count);
+    console.log(device.id, str, count);
   });
 
 }, 5 * 60 * 1000);
