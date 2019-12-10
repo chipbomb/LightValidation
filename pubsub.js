@@ -3,12 +3,13 @@ const logger = require('./logger');
 
 const CHANNELS = {
   BLOCKCHAIN: 'BLOCKCHAIN',
-  WITNESS: 'WITNESS'
+  WITNESS: 'WITNESS',
+  AGGREGATION: 'AGGREGATION'
 };
 
 
 class PubSub {
-  constructor({ redisUrl }) {
+  constructor({ redisUrl, role }) {
     this.publisher = redis.createClient(redisUrl);
     this.subscriber = redis.createClient(redisUrl);
 
@@ -19,6 +20,9 @@ class PubSub {
       (channel, message) => this.handleMessage(channel, message)
     );
     this.logData = [];
+    this.newNum = 0;
+    this.selectionFactor = 0;
+    this.role = role;
   }
 
   handleMessage(channel, message) {
@@ -28,13 +32,34 @@ class PubSub {
 
     switch (channel) {
       case CHANNELS.BLOCKCHAIN:
-        this.blockchain.replaceChain(parsedMessage, true, () => {
-          this.transactionPool.clearBlockchainTransactions({
-            chain: parsedMessage
-          });
-        });
+        this.newNum = parsedMessage.NEW;
+        console.log(this.newNum);
+        this.selectionFactor = parsedMessage.SELECTION;
         break;
-      case CHANNELS.TRANSACTION:
+      case CHANNELS.AGGREGATION:
+        var block = this.logData.find(obj => obj.hash === parsedMessage.Block);
+        var devices = parsedMessage.Devices;
+        if (!block) {
+          let block = {
+            hash: parsedMessage.Block,
+            devices: []
+          };
+          this.logData.push(block);
+        }
+        devices.forEach(function(device) {
+          var d = this.logData[parsedMessage.Block].devices.find(obj => obj.id === device);
+          if (!d) {
+            let dev = {
+              id: device,
+              count: 1
+            }
+            logData[parsedMessage.Block].devices.push(dev)
+          }
+          else {
+            logData[parsedMessage.Block].devices[device].count++;
+          }
+        });
+
         this.transactionPool.setTransaction(parsedMessage);
         break;
       case CHANNELS.WITNESS:
@@ -69,11 +94,6 @@ class PubSub {
     this.publisher.publish(channel, message, () => {
       //logger.verbose("published message");
     });
-    // this.subscriber.unsubscribe(channel, () => {
-    //   this.publisher.publish(channel, message, () => {
-    //     this.subscriber.subscribe(channel);
-    //   });
-    // });
 
   }
 
@@ -90,10 +110,10 @@ class PubSub {
     });
   }
 
-  broadcastTransaction(transaction) {
+  broadcastDevices(block, passedDevices) {
     this.publish({
-      channel: CHANNELS.TRANSACTION,
-      message: JSON.stringify(transaction)
+      channel: CHANNELS.AGGREGATION,
+      message: JSON.stringify({ Block: block, Devices: passedDevices})
     });
   }
 
@@ -105,6 +125,13 @@ class PubSub {
     let block = this.logData.find(obj => obj.hash === blockHash);
     block.broadcast = new Date().getTime();
     logger.verbose("broadcast confirmation")
+  }
+
+  broadcastUpdate(msg) {
+    this.publish({
+      channel: CHANNELS.BLOCKCHAIN,
+      message: msg
+    });
   }
 
   updateLog(blockHash) {

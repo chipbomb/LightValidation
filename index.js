@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const Transaction = require('ethereumjs-tx').Transaction;
 const ethJsUtil = require('ethereumjs-util');
 const request = require('request-promise');
+const requestsync = require('request');
 const util = require('util');
 
 const PubSub = require('./pubsub');
@@ -77,7 +78,11 @@ var args = require('yargs')
       describe: 'test name',
       type: 'string'
     },
-
+    'role': {
+      default: 'client',
+      describe: 'node role',
+      type: 'string'
+    },
 
   })
   .argv
@@ -105,6 +110,9 @@ let kw = args.kw;
 let fs = args.fs;
 let fc = args.fc;
 let fw = args.fw;
+let ND = args.ND;
+
+let role = args.role;
 
 let duration = args.d * 60 * 1000;
 let redisIP = args.s;
@@ -114,6 +122,8 @@ let blockValidation = new BlockValidation(ms, ks, fs, mc, kc, fc, mw, kw, fw);
 var sharedSecrets = {};
 var deviceList;
 var subscription;
+var blockCount = 0;
+
 async function getPubkeyByAddress(address) {
   var filter = { device: address };
   let events = await contractweb3.getPastEvents('DeviceRegistered', { filter, fromBlock: 0, toBlock: 'latest' });
@@ -153,13 +163,20 @@ async function computeSharedSecrets(ND) {
 async function prepareConfirmation(block, witnessID) {
   let Bw = blockValidation.createWhitelist(block, witnessID);
   //logger.debug(util.format("Whitelist ", Bw.intRep.toString(2)));
-  
   let passedDevices = [];
   let secrets = [];
   let trueND = deviceList.length;
   let checkcount = 0;
+
+  if (pubsub.newNum > 0) {
+    logger.info(util.format("New devices registered:", pubsub.newNum));
+    ND = ND + pubsub.newNum;
+    blockValidation.chooseBw(ND);
+    logger.info(util.format('Bw params:', blockValidation.fw, blockValidation.mw, blockValidation.kw));
+  }
+
   logger.debug(util.format("starting compute", block));
-  for (var i = 0; i < args.ND; i++) {
+  for (var i = 0; i < ND; i++) {
     let device = deviceList[i % trueND];
     //console.log("Check", i);
     if (blockValidation.checkWhitelist(device + i + block, Bw) && device !== 0) {
@@ -180,7 +197,8 @@ async function prepareConfirmation(block, witnessID) {
       secrets.push(s);
     }
   }
-  logger.debug(util.format("Done check", i, checkcount, block,));
+  logger.debug(util.format("Done check", i, checkcount, block));
+  sendAggre(redisIP, { Block: block, Devices: passedDevices });
   return { passedDevices, secrets };
 }
 
@@ -190,13 +208,28 @@ async function getAccount(server) {
   return JSON.parse(response);
 }
 
+async function sendAggre(server, data) {
+  request.post(`http://${server}:3000/Aggregation`, {
+    json: {
+      data
+    }
+  }, (error, res, body) => {
+    if (error) {
+      logger.error(error);
+      return;
+    }
+    logger.verbose(`statusCode: ${res.statusCode}`);
+    logger.verbose(body);
+  })
+}
+
 
 async function main() {
   //if (process.argv.length > 2) redisIP = process.argv[2];
   logger.info(util.format("redis", redisIP));
   blockValidation.chooseBw(args.ND);
   logger.info(util.format('Bw params:', blockValidation.fw, blockValidation.mw, blockValidation.kw));
-  pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379` });
+  pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379`, role: role });
 
   var myAccount = await getAccount(redisIP);
   logger.info(myAccount.key);
@@ -206,7 +239,6 @@ async function main() {
 
   myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2), 'hex');
-  //sharedSecrets = await computeSharedSecrets(args.ND);
 
   const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2b32da7c679a43d1840be1845ff19ae8'));
   logger.info('Connected to Infura.');
@@ -216,17 +248,29 @@ async function main() {
 
     //logger.info('Successfully subscribed!', blockHeader.hash);
   }).on('data', function (blockHeader) {
-    logger.info(util.format('new block', blockHeader.hash));
-    pubsub.updateLog(blockHeader.hash);
-    prepareConfirmation(blockHeader.hash, myAccount.account).then(function ({ passedDevices, secrets }) {
-      logger.verbose(util.format("passed devices:", passedDevices.length));
-      let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
-      pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }), blockHeader.hash);
-    });
-    // let { passedDevices, secrets } = await prepareConfirmation(blockHeader.hash, myAccount.account);
-    // logger.verbose(util.format("passed devices:", passedDevices.length));
-    // let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
-    // pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }));
+    if (role === 'client') {
+      logger.info(util.format('new block', blockHeader.hash));
+      pubsub.updateLog(blockHeader.hash);
+      prepareConfirmation(blockHeader.hash, myAccount.account).then(function ({ passedDevices, secrets }) {
+        logger.verbose(util.format("passed devices:", passedDevices.length));
+        let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
+        pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }), blockHeader.hash);
+      });
+    }
+    else {
+      blockCount++;
+      // update new device every 20 blocks
+      let num = 0;
+      let selectionFactor = Math.floor(Math.random() * 10000000)
+      if (blockCount > 0 && blockCount % 20 === 0) {
+        num = Math.floor(Math.random() * 101);
+      }
+      else if (blockCount > 0 && blockCount % 30 === 0) {
+        num = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
+      }
+
+      pubsub.broadcastUpdate(JSON.stringify({ 'SELECTION': selectionFactor, 'NEW': num }));
+    }
 
   });
 
@@ -247,16 +291,18 @@ setTimeout(() => {
   let numBlockwithConfirm = 0;
   let numConfirm = 0;
   let delay = 0;
+  let computeDelay = 0;
   logger.verbose(util.format("summary", "block", "received", "broadcast", "last-confirm", "total-confirm"));
   for (i = 0; i < pubsub.logData.length; i++) {
     var block = pubsub.logData[i];
     logger.verbose(util.format("summary", block.hash, block.received, block.broadcast, Math.max(...block.confirmMsg), block.confirmMsg.length));
     if (i >= 2 && i < pubsub.logData.length - 2) {
       numConfirm += block.confirmMsg.length;
-      
+
       if (block.confirmMsg.length > 0 && block.received > 0) {
         numBlockwithConfirm++;
         delay += Math.max(...block.confirmMsg) - block.received;
+        computeDelay += block.broadcast - block.received;
       }
     }
   }
@@ -268,6 +314,7 @@ setTimeout(() => {
   logger.info(util.format('Total blocks with confirmations: ', numBlockwithConfirm));
   logger.info(util.format('Average confirmations per block:', numConfirm / numBlockwithConfirm));
   logger.info(util.format('Average delay per block (ms)', delay / numBlockwithConfirm));
+  logger.info(util.format('Average compute delay per block (ms)', computeDelay / numBlockwithConfirm));
   setTimeout(() => {
     return process.exit(22);
   }, 3000);
