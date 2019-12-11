@@ -16,14 +16,20 @@ class BlockValidation {
   }
 
   createConfirmation(block, secrets) {
-    let Bc = new BloomFilter({ size: this.mc, fillRate: this.fc });
+    let start = new Date();
+    var Bc_array = [];
+    Bc_array.push(new BloomFilter({ size: this.mc, fillRate: this.fc }));
     for (let s of secrets) {
+      if (Bc_array[Bc_array.length-1].isFull()) Bc_array.push(new BloomFilter({ size: this.mc, fillRate: this.fc }));
+      var Bc = Bc_array[Bc_array.length-1];
       const hmac = crypto.createHmac('sha256', s);
       hmac.update(block);
       const codeWord = hmac.digest();
       Bc.insert(codeWord, this.kc);
     }
-    return Bc;
+    let end = new Date();
+    logger.debug(util.format("create confirmations takes", (end-start)/1000))
+    return Bc_array;
   }
 
   createSelection(secret) {
@@ -81,12 +87,13 @@ class BlockValidation {
             0.13348389, 0.10011292, 0.07508469]
     ];
     //console.log(p);
-    const pp = -Math.log(1-this.fc)*this.mc/ND/this.kc;
+    //const pp = -Math.log(1-this.fc)*this.mc/ND/this.kc;
+    const pp = 16/30;
     console.log(pp);
     var min_diff = 1000;
     for (let i = 0; i < p.length; i++) 
       for (let j = 0; j < p[0].length; j++) {
-        var diff = pp - p[i][j];
+        var diff =  p[i][j] - pp;
         if (diff < min_diff && diff >= 0) {
           min_diff = diff;
           this.fw = p[i][0];
