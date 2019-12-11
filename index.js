@@ -218,8 +218,8 @@ async function sendAggre(server, data) {
       logger.error(error);
       return;
     }
-    logger.verbose(`statusCode: ${res.statusCode}`);
-    logger.verbose(body);
+    //logger.verbose(`statusCode: ${res.statusCode}`);
+    //logger.verbose(body);
   })
 }
 
@@ -253,8 +253,8 @@ async function main() {
       pubsub.updateLog(blockHeader.hash);
       prepareConfirmation(blockHeader.hash, myAccount.account).then(function ({ passedDevices, secrets }) {
         logger.verbose(util.format("passed devices:", passedDevices.length));
-        let Bc = blockValidation.createConfirmation(blockHeader.hash, secrets);
-        pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc }), blockHeader.hash);
+        let Bc_array = blockValidation.createConfirmation(blockHeader.hash, secrets);
+        pubsub.broadcastMessage(JSON.stringify({ 'WITNESS': myAccount.account, 'Block': blockHeader.hash, 'Bc': Bc_array }), blockHeader.hash);
       });
     }
     else {

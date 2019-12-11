@@ -7,7 +7,7 @@ class BloomFilter {
     this.size = size;
     this.intRep = bigInt();
     this.CHUNK_SIZE = Math.log(size)/Math.log(2);
-    this.isFull = false;
+    //this.isFull = false;
   }
 
 
@@ -22,6 +22,12 @@ class BloomFilter {
         //console.log(n);
     }
     return count;
+  }
+
+  isFull() {
+    if (this.countSetBits()/this.size >= this.fillRate)
+      return true;
+    return false;
   }
 
   static bitArrayToInt32(bitArray) {
