@@ -69,7 +69,7 @@ app.post('/Aggregation', function (req, res) {
       logData.push(dev);
     }
     else {
-      var block = d.blocks.find(obj => obj.block === data.Block);
+      var block = d.blocks.find(obj => obj.hash === data.Block);
       if (!block) {
         let block = {
           hash: data.Block,
@@ -102,7 +102,7 @@ setInterval(() => {
       count += device.blocks[i].count;
       str += ` ${device.blocks[i].count}`
     }
-    console.log(device.id, str, count);
+    console.log(device.id, device.blocks.length, count);
   });
 
 }, 5 * 60 * 1000);
