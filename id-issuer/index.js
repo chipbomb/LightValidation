@@ -100,7 +100,7 @@ setInterval(() => {
     let str = '';
     for (i = 0; i < device.blocks.length; i++) {
       count += device.blocks[i].count;
-      str += ` ${device.blocks[i].count}`
+      //str += ` ${device.blocks[i].count}`
     }
     console.log(device.id, str, count);
   });
