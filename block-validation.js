@@ -20,16 +20,28 @@ class BlockValidation {
     var Bc_array = [];
     Bc_array.push(new BloomFilter({ size: this.mc, fillRate: this.fc }));
     for (let s of secrets) {
-      if (Bc_array[Bc_array.length-1].isFull()) Bc_array.push(new BloomFilter({ size: this.mc, fillRate: this.fc }));
+      if (Bc_array[Bc_array.length-1].isFull()) {
+        Bc_array.push(new BloomFilter({ size: this.mc, fillRate: this.fc }));
+        //let end = new Date();
+        //logger.debug(util.format("create confirmations takes", (end-start)/1000));
+        //start = new Date();
+        //logger.debug(util.format("Confirmation ", Bc.intRep.toString(2)));
+      }
       var Bc = Bc_array[Bc_array.length-1];
       const hmac = crypto.createHmac('sha256', s);
       hmac.update(block);
       const codeWord = hmac.digest();
       Bc.insert(codeWord, this.kc);
+      //console.log("-------------------set bits after insert", Bc.countSetBits());
     }
     let end = new Date();
     logger.debug(util.format("create confirmations takes", (end-start)/1000))
-    return Bc_array;
+    logger.debug(util.format("Confirmation ", Bc_array[Bc_array.length-1].intRep.toString(2)));
+    let stringBc = [];
+    for (let Bc of Bc_array) {
+      stringBc.push(Bc.toHexString());
+    }
+    return stringBc;
   }
 
   createSelection(secret) {
