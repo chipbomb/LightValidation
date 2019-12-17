@@ -73,6 +73,16 @@ var args = require('yargs')
       describe: 'number of devices',
       type: 'number'
     },
+    'NW': {
+      default: 30,
+      describe: 'number of witnesses',
+      type: 'number'
+    },
+    'ideal': {
+      default: 1,
+      describe: 'assume that there is an ideal number of witnesses',
+      type: 'number'
+    },
     'test': {
       default: 'test',
       describe: 'test name',
@@ -171,7 +181,7 @@ async function prepareConfirmation(block, witnessID) {
   if (pubsub.newNum > 0) {
     logger.info(util.format("New devices registered:", pubsub.newNum));
     ND = ND + pubsub.newNum;
-    blockValidation.chooseBw(ND);
+    blockValidation.chooseBw(ND, args.NW, args.ideal);
     logger.info(util.format('Bw params:', blockValidation.fw, blockValidation.mw, blockValidation.kw));
   }
 
@@ -227,7 +237,7 @@ async function sendAggre(server, data) {
 async function main() {
   //if (process.argv.length > 2) redisIP = process.argv[2];
   logger.info(util.format("redis", redisIP));
-  blockValidation.chooseBw(args.ND);
+  blockValidation.chooseBw(args.ND, args.NW, args.ideal);
   logger.info(util.format('Bw params:', blockValidation.fw, blockValidation.mw, blockValidation.kw));
   pubsub = new PubSub({ redisUrl: `redis://${redisIP}:6379`, role: role });
 

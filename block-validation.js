@@ -80,7 +80,7 @@ class BlockValidation {
     return Bw;
   }
 
-  chooseBw(ND) {
+  chooseBw(ND, NW, ideal) {
     const p = [
       [4.00000e-01, 1.60000e-01, 6.40000e-02, 2.56000e-02, 1.02400e-02, 4.09600e-03,
         1.63840e-03, 6.55360e-04, 2.62144e-04],
@@ -98,9 +98,14 @@ class BlockValidation {
         [0.75,       0.5625,     0.421875,   0.31640625, 0.23730469, 0.17797852,
             0.13348389, 0.10011292, 0.07508469]
     ];
+    var pp;
+    if (ideal) 
+      pp = 16/NW;
+    else 
+      pp = -Math.log(1-this.fc)*this.mc/ND/this.kc;
     //console.log(p);
     //const pp = -Math.log(1-this.fc)*this.mc/ND/this.kc;
-    const pp = 16/30;
+    //const pp = 16/30;
     console.log(pp);
     var min_diff = 1000;
     for (let i = 0; i < p.length; i++) 
