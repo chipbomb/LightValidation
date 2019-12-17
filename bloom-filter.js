@@ -49,7 +49,7 @@ class BloomFilter {
   toHexString() {
     var s = '', h = '0123456789ABCDEF';
     this.filter.forEach((v) => { s += h[v >> 4] + h[v & 15]; });
-    console.log(s);
+    //console.log(s);
     return s;
   }
 

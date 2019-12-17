@@ -36,7 +36,7 @@ class BlockValidation {
     }
     let end = new Date();
     logger.debug(util.format("create confirmations takes", (end-start)/1000))
-    logger.debug(util.format("Confirmation ", Bc_array[Bc_array.length-1].intRep.toString(2)));
+    //logger.debug(util.format("Confirmation ", Bc_array[Bc_array.length-1].intRep.toString(2)));
     let stringBc = [];
     for (let Bc of Bc_array) {
       stringBc.push(Bc.toHexString());
@@ -99,7 +99,7 @@ class BlockValidation {
             0.13348389, 0.10011292, 0.07508469]
     ];
     var pp;
-    if (ideal) 
+    if (!ideal) 
       pp = 16/NW;
     else 
       pp = -Math.log(1-this.fc)*this.mc/ND/this.kc;
