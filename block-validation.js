@@ -35,7 +35,7 @@ class BlockValidation {
       //console.log("-------------------set bits after insert", Bc.countSetBits());
     }
     let end = new Date();
-    logger.debug(util.format("create confirmations takes", (end-start)/1000))
+    //logger.debug(util.format("create confirmations takes", (end-start)/1000))
     //logger.debug(util.format("Confirmation ", Bc_array[Bc_array.length-1].intRep.toString(2)));
     let stringBc = [];
     for (let Bc of Bc_array) {
@@ -75,7 +75,7 @@ class BlockValidation {
      // logger.debug(util.format("each iteration takes", (e-s)/1000));
     }
     let end = new Date();
-    logger.debug(util.format("create whitelist takes", (end-start)/1000))
+    //logger.debug(util.format("create whitelist takes", (end-start)/1000))
     //console.log("set bits ", Bw.countSetBits());
     return Bw;
   }
