@@ -276,7 +276,7 @@ async function main() {
         num = Math.floor(Math.random() * 101);
       }
       else if (blockCount > 0 && blockCount % 50 === 0) {
-        num = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
+        num = Math.floor(Math.random() * (500 - 300 + 1)) + 300;
       }
 
       pubsub.broadcastUpdate(JSON.stringify({ 'SELECTION': selectionFactor, 'NEW': num }));
