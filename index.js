@@ -275,7 +275,7 @@ async function main() {
       if (blockCount > 0 && blockCount % 20 === 0) {
         num = Math.floor(Math.random() * 101);
       }
-      else if (blockCount > 0 && blockCount % 30 === 0) {
+      else if (blockCount > 0 && blockCount % 50 === 0) {
         num = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
       }
 
@@ -306,7 +306,7 @@ setTimeout(() => {
   for (i = 0; i < pubsub.logData.length; i++) {
     var block = pubsub.logData[i];
     logger.verbose(util.format("summary", block.hash, block.received, block.broadcast, Math.max(...block.confirmMsg), block.confirmMsg.length));
-    if (i >= 2 && i < pubsub.logData.length - 2) {
+    if (i >= 20 && i < pubsub.logData.length - 2) {
       numConfirm += block.confirmMsg.length;
 
       if (block.confirmMsg.length > 0 && block.received > 0) {
