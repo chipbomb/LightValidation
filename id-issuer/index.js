@@ -102,7 +102,7 @@ setInterval(() => {
       count += device.blocks[i].count;
       //str += ` ${device.blocks[i].count}`
     }
-    console.log(device.id, str, count);
+    console.log(device.id, count, device.blocks.length);
   });
 
-}, 5 * 60 * 1000);
+}, 10 * 60 * 1000);
