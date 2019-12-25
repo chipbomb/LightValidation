@@ -244,8 +244,10 @@ async function main() {
   var myAccount = await getAccount(redisIP);
   logger.info(myAccount.key);
 
-  deviceList = await contractweb3.methods.getDeviceList().call();
-  logger.info(util.format("Number of devices:", deviceList.length));
+  let temp = await contractweb3.methods.getDeviceList().call();
+  deviceList = Array.from(new Set(temp));
+  logger.info(util.format("Number of unique devices:", deviceList.length));
+  temp = [];
 
   myECDH = crypto.createECDH('secp256k1');
   myECDH.setPrivateKey(myAccount.key.substring(2), 'hex');
